@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scraping Dashboard</title>
+</head>
+<body>
+    <h1>Scraping Dashboard</h1>
+    <form id="scrapeForm" action="/start_scraping" method="post">
+        <div>
+            <label for="mode">Choose Operation:</label>
+            <select name="mode" id="mode">
+                <option value="whitepaper">Whitepaper</option>
+                <option value="ads">Ads</option>
+            </select>
+        </div>
+        <div>
+            <label for="force">Force:</label>
+            <input type="checkbox" name="force" value="true">
+        </div>
+        <div>
+            <h2>Select Websites to Scrape:</h2>
+            <div id="websiteCheckboxes">
+                <!-- Checkboxes will be dynamically inserted here -->
+            </div>
+        </div>
+        <button type="submit">Start Scraping</button>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/get_websites')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('websiteCheckboxes');
+                    data.websites.forEach((website, index) => {
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.name = 'websites';
+                        checkbox.value = index;
+                        const label = document.createElement('label');
+                        label.textContent = website.name;
+                        container.appendChild(checkbox);
+                        container.appendChild(label);
+                        container.appendChild(document.createElement('br'));
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
