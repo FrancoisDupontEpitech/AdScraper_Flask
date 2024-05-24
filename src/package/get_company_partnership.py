@@ -12,11 +12,13 @@ from utils.open_json_in_excel import generate_excel_from_json
 from utils.get_app_data_directory import get_app_data_directory
 from utils.delete_partial_json_file import delete_partial_json_file
 
-def get_company_partnership(mode, flag_force, stop_event, selected_websites):
+def get_company_partnership(mod, flag_force, stop_event, selected_websites):
     threads = []
+    print(f"{Colors.GREEN}Selected websites: {selected_websites}{Colors.RESET}")
+    print(f"{Colors.GREEN}Selected mode: {mod}{Colors.RESET}")
     for website in selected_websites:
         thread = threading.Thread(target=scrape_and_process_website,
-                        args=(website, mode, flag_force, stop_event),
+                        args=(website, mod, flag_force, stop_event),
                         daemon=True)
         threads.append(thread)
         thread.start()
@@ -24,22 +26,22 @@ def get_company_partnership(mode, flag_force, stop_event, selected_websites):
     for thread in threads:
         thread.join()
 
-def scrape_and_process_website(website, mode, flag_force, stop_event):
+def scrape_and_process_website(website, mod, flag_force, stop_event):
     base_directory = get_app_data_directory("AdScraper")
     directory_name = get_directory_name_from_url(website['url'])
     today_date = datetime.now().strftime("%d-%m-%Y")
     directory_path = os.path.join(base_directory, 'output', directory_name, today_date)
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
-    json_file_path = os.path.join(directory_path, f'{mode}.json')
+    json_file_path = os.path.join(directory_path, f'{mod}.json')
 
     print(f"Scraping data for {directory_name}...")
 
     if not os.path.exists(json_file_path) or flag_force:
-        function_mode = website[f'function_{mode}']
-        print(f"{Colors.GREEN} Get {mode}: {Colors.RESET}:")
+        function_mod = website[f'function_{mod}']
+        print(f"{Colors.GREEN} Get {mod}: {Colors.RESET}:")
         print(f"{Colors.GREEN}Processing {website['url']}...{Colors.RESET}")
-        scrape_website(function_mode, mode, website['url'], stop_event)
+        scrape_website(function_mod, mod, website['url'], stop_event)
 
         print(f"{Colors.CYAN}json file path is : {json_file_path} {Colors.RESET}")
 
@@ -48,16 +50,16 @@ def scrape_and_process_website(website, mode, flag_force, stop_event):
                 data = json.load(json_file)
             print(f"{Colors.CYAN}json data: {data} {Colors.RESET}")
             print(f"{Colors.CYAN} Generating Excel file for {directory_name}...{Colors.RESET}")
-            generate_excel_from_json(data, mode, json_file_path)
+            generate_excel_from_json(data, mod, json_file_path)
 
 
-def scrape_website(function_mode, mode, website_url, stop_event):
-    company_data = function_mode(stop_event)
-    if mode == "ads":
+def scrape_website(function_mod, mod, website_url, stop_event):
+    company_data = function_mod(stop_event)
+    if mod == "ads":
         print(f"{Colors.CYAN}Saving ads data for {website_url}...{Colors.RESET}")
         save_ads_data(company_data, website_url, stop_event)
-    # if mode == "whitepaper":
-    #     save_whitepaper_data(company_data, website_url, mode, stop_event)
+    # if mod == "whitepaper":
+    #     save_whitepaper_data(company_data, website_url, mod, stop_event)
 
 def save_ads_data(company_data, website_url, stop_event):
     print(f"{Fore.LIGHTMAGENTA_EX}save_ads_data: {Style.RESET_ALL}")
